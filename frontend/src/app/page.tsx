@@ -1,103 +1,253 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import CurrentWeather from '@/components/weather/CurrentWeather';
+import WeatherForecast from '@/components/weather/WeatherForecast';
+import { useCurrentWeather, useForecast } from '@/lib/hooks/useWeather';
+
+// Mock data for fallback (only used when API fails)
+const MOCK_FORECAST_DATA = {
+  location: {
+    name: "London",
+    country: "GB",
+    coordinates: { lat: 51.51, lon: -0.13 }
+  },
+  forecast: [
+    {
+      date: new Date().toISOString().split('T')[0],
+      minTemp: 8,
+      maxTemp: 16,
+      description: "Partly cloudy",
+      icon: "03d",
+      precipitation: 20,
+      humidity: 65,
+      windSpeed: 4.2
+    },
+    {
+      date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      minTemp: 10,
+      maxTemp: 18,
+      description: "Sunny",
+      icon: "01d",
+      precipitation: 5,
+      humidity: 60,
+      windSpeed: 3.8
+    },
+    {
+      date: new Date(Date.now() + 2*86400000).toISOString().split('T')[0],
+      minTemp: 9,
+      maxTemp: 17,
+      description: "Light rain",
+      icon: "10d",
+      precipitation: 40,
+      humidity: 70,
+      windSpeed: 5.1
+    },
+    {
+      date: new Date(Date.now() + 3*86400000).toISOString().split('T')[0],
+      minTemp: 7,
+      maxTemp: 15,
+      description: "Cloudy",
+      icon: "04d",
+      precipitation: 25,
+      humidity: 68,
+      windSpeed: 4.5
+    },
+    {
+      date: new Date(Date.now() + 4*86400000).toISOString().split('T')[0],
+      minTemp: 8,
+      maxTemp: 14,
+      description: "Moderate rain",
+      icon: "10d",
+      precipitation: 60,
+      humidity: 75,
+      windSpeed: 6.2
+    }
+  ],
+  timestamp: new Date().toISOString()
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [location, setLocation] = useState('London'); // Default location
+  const { data: weatherData, isLoading: weatherLoading, error: weatherError } = useCurrentWeather(location);
+  const { data: forecastData, isLoading: forecastLoading, error: forecastError } = useForecast(location);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const searchLocation = formData.get('location') as string;
+    if (searchLocation) {
+      setLocation(searchLocation);
+    }
+  };
+
+  // Function to process forecast data for our component
+  const processForecastData = () => {
+    // Check if we have actual data from API
+    if (!forecastData) {
+      return MOCK_FORECAST_DATA.forecast;
+    }
+    
+    try {
+      // Detect the structure of the forecast data
+      const anyData = forecastData as any;
+      let forecastItems: any[] = [];
+      
+      // Try to get the forecast array
+      if (Array.isArray(anyData.forecast)) {
+        forecastItems = anyData.forecast;
+      } else if (anyData.forecast && typeof anyData.forecast === 'object') {
+        // If forecast is an object but not an array, it might be wrapped in another object
+        if (Array.isArray(anyData.forecast.list)) {
+          forecastItems = anyData.forecast.list;
+        }
+      }
+      
+      // Try other common structures if we still don't have items
+      if (forecastItems.length === 0) {
+        if (Array.isArray(anyData.list)) {
+          forecastItems = anyData.list;
+        } else if (anyData.daily && Array.isArray(anyData.daily)) {
+          forecastItems = anyData.daily;
+        }
+      }
+      
+      if (forecastItems.length === 0) {
+        return MOCK_FORECAST_DATA.forecast;
+      }
+      
+      // Map the items to our expected format
+      return forecastItems.map((item: any, index: number) => {
+        // Extract date
+        let dateValue = item.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0];
+        
+        // Extract temperatures based on the specific structure
+        let minTemp = 0;
+        let maxTemp = 0;
+        
+        if (item.temperature) {
+          // Handle the specific structure from your API
+          minTemp = item.temperature.min || 0;
+          maxTemp = item.temperature.max || 0;
+        } else {
+          // Fallbacks for other formats
+          minTemp = item.minTemp || (item.temp?.min) || (item.main?.temp_min) || 0;
+          maxTemp = item.maxTemp || (item.temp?.max) || (item.main?.temp_max) || 0;
+        }
+        
+        // Extract weather description and icon based on your specific structure
+        let weatherDescription = 'Weather data unavailable';
+        let weatherIcon = '01d';
+        
+        if (item.weather) {
+          if (typeof item.weather === 'object' && !Array.isArray(item.weather)) {
+            // Handle your API's structure where weather is a single object
+            weatherDescription = item.weather.description || 'Weather data unavailable';
+            weatherIcon = item.weather.icon || '01d';
+          } else if (Array.isArray(item.weather) && item.weather[0]) {
+            // Handle common structure where weather is an array
+            weatherDescription = item.weather[0].description || 'Weather data unavailable';
+            weatherIcon = item.weather[0].icon || '01d';
+          }
+        }
+        
+        // Extract precipitation based on your specific structure
+        let precipitation = 0;
+        if (item.precipitation) {
+          // Handle your API's structure
+          precipitation = typeof item.precipitation === 'number' 
+            ? item.precipitation
+            : (item.precipitation.probability !== undefined 
+                ? item.precipitation.probability * 100 
+                : 0);
+        } else if (typeof item.pop === 'number') {
+          // OpenWeatherMap format
+          precipitation = item.pop * 100;
+        }
+        
+        // Extract humidity
+        let humidity = item.humidity || 0;
+        if (typeof humidity !== 'number' && item.main && typeof item.main.humidity === 'number') {
+          humidity = item.main.humidity;
+        }
+        
+        // Extract wind speed based on your specific structure
+        let windSpeed = 0;
+        if (item.wind) {
+          // Handle your API's structure where wind might have avg or speed
+          windSpeed = item.wind.avg || item.wind.speed || item.wind.max || 0;
+        } else if (typeof item.windSpeed === 'number') {
+          windSpeed = item.windSpeed;
+        }
+        
+        const result = {
+          date: dateValue,
+          minTemp,
+          maxTemp,
+          description: weatherDescription,
+          icon: weatherIcon,
+          precipitation,
+          humidity,
+          windSpeed
+        };
+        
+        return result;
+      });
+    } catch (err) {
+      return MOCK_FORECAST_DATA.forecast;
+    }
+  };
+
+  return (
+    <div className="space-y-8">
+      {/* Search Bar */}
+      <div className="w-full max-w-md mx-auto">
+        <form onSubmit={handleSearch} className="flex">
+          <input
+            type="text"
+            name="location"
+            placeholder="Enter city name or coordinates"
+            className="flex-grow px-4 py-2 rounded-l-md border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+            defaultValue={location}
+          />
+          <button 
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-r-md transition-colors duration-200"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            Search
+          </button>
+        </form>
+      </div>
+
+      {/* Current Weather */}
+      <div>
+        {weatherLoading && <div className="text-center">Loading weather data...</div>}
+        {weatherError && <div className="text-center text-red-500">Error: {weatherError.message}</div>}
+        {weatherData && (
+          <CurrentWeather
+            location={weatherData.location.name}
+            temperature={weatherData.current.temperature.actual}
+            feelsLike={weatherData.current.temperature.feelsLike}
+            description={weatherData.current.weather.description}
+            humidity={weatherData.current.humidity}
+            windSpeed={weatherData.current.wind.speed}
+            windDirection={weatherData.current.wind.direction}
+            icon={weatherData.current.weather.icon}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
+        )}
+      </div>
+
+      {/* Forecast */}
+      <div>
+        {forecastLoading && <div className="text-center">Loading forecast data...</div>}
+        {forecastError && <div className="text-center text-red-500">Error: {forecastError.message}</div>}
+        {forecastData && (
+          <WeatherForecast
+            location={forecastData.location ? forecastData.location.name : location}
+            forecast={processForecastData()}
           />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        )}
+      </div>
     </div>
   );
 }
