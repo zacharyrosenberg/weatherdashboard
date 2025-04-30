@@ -161,7 +161,7 @@ async function updateUserPreferences(userId, preferences) {
 // Default preferences
 function getDefaultPreferences() {
     return {
-        temperatureUnit: 'celsius',
+        temperatureUnit: 'fahrenheit',
         dashboardLayout: 'default',
         theme: 'light',
         defaultLocation: null

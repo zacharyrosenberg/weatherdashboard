@@ -80,13 +80,13 @@ async function fetchWeatherFromAPI(locationId) {
         if (locationId.includes(',')) {
             // Assume it's lat,lon
             const [lat, lon] = locationId.split(',');
-            url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric`;
+            url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=imperial`;
             console.log(`Using coordinates: lat=${lat}, lon=${lon}`);
         } else {
             // Assume it's a city name or ID
             const encodedLocation = encodeURIComponent(locationId);
             console.log(`Encoded location query: ${encodedLocation}`);
-            url = `https://api.openweathermap.org/data/2.5/weather?q=${encodedLocation}&appid=${WEATHER_API_KEY}&units=metric`;
+            url = `https://api.openweathermap.org/data/2.5/weather?q=${encodedLocation}&appid=${WEATHER_API_KEY}&units=imperial`;
         }
         
         console.log('Fetching from URL:', url.replace(WEATHER_API_KEY, 'API_KEY_HIDDEN'));

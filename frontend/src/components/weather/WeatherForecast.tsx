@@ -85,7 +85,7 @@ export default function WeatherForecast({ location, forecast }: WeatherForecastP
             <div className="text-center">
               <div className="text-sm text-gray-600 dark:text-gray-300">Temp</div>
               <div className="text-xl font-medium text-gray-800 dark:text-white">
-                {Math.round(day.minTemp)}° / {Math.round(day.maxTemp)}°
+                {Math.round(day.minTemp)}°F / {Math.round(day.maxTemp)}°F
               </div>
             </div>
 
@@ -101,7 +101,7 @@ export default function WeatherForecast({ location, forecast }: WeatherForecastP
             <div className="text-center">
               <div className="text-sm text-gray-600 dark:text-gray-300">Wind</div>
               <div className="text-xl font-medium text-gray-800 dark:text-white">
-                {Math.round(day.windSpeed)} m/s
+                {Math.round(day.windSpeed)} mph
               </div>
             </div>
           </div>

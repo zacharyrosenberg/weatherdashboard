@@ -33,13 +33,13 @@ export default function CurrentWeather({
           />
           <div>
             <div className="text-3xl font-bold text-gray-800 dark:text-white">
-              {Math.round(temperature)}°C
+              {Math.round(temperature)}°F
             </div>
             <div className="text-gray-600 dark:text-gray-300 capitalize">
               {description}
             </div>
             <div className="text-sm text-gray-500 dark:text-gray-400">
-              Feels like {Math.round(feelsLike)}°C
+              Feels like {Math.round(feelsLike)}°F
             </div>
           </div>
         </div>
@@ -52,7 +52,7 @@ export default function CurrentWeather({
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Wind Speed</span>
-            <span className="text-gray-800 dark:text-white">{windSpeed} m/s</span>
+            <span className="text-gray-800 dark:text-white">{windSpeed} mph</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-600 dark:text-gray-300">Wind Direction</span>

@@ -110,7 +110,7 @@ async function fetchForecastFromAPI(locationId, days) {
         const cnt = days * 8; // API returns data in 3-hour increments, so 8 per day
         console.log(`Requesting ${cnt} data points for a ${days}-day forecast`);
         
-        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=metric&cnt=${cnt}`;
+        const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${WEATHER_API_KEY}&units=imperial&cnt=${cnt}`;
         
         console.log('Fetching forecast from URL:', url.replace(WEATHER_API_KEY, 'API_KEY_HIDDEN'));
         const response = await axios.get(url);
