@@ -5,67 +5,6 @@ import CurrentWeather from '@/components/weather/CurrentWeather';
 import WeatherForecast from '@/components/weather/WeatherForecast';
 import { useCurrentWeather, useForecast } from '@/lib/hooks/useWeather';
 
-// Mock data for fallback (only used when API fails)
-const MOCK_FORECAST_DATA = {
-  location: {
-    name: "London",
-    country: "GB",
-    coordinates: { lat: 51.51, lon: -0.13 }
-  },
-  forecast: [
-    {
-      date: new Date().toISOString().split('T')[0],
-      minTemp: 8,
-      maxTemp: 16,
-      description: "Partly cloudy",
-      icon: "03d",
-      precipitation: 20,
-      humidity: 65,
-      windSpeed: 4.2
-    },
-    {
-      date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      minTemp: 10,
-      maxTemp: 18,
-      description: "Sunny",
-      icon: "01d",
-      precipitation: 5,
-      humidity: 60,
-      windSpeed: 3.8
-    },
-    {
-      date: new Date(Date.now() + 2*86400000).toISOString().split('T')[0],
-      minTemp: 9,
-      maxTemp: 17,
-      description: "Light rain",
-      icon: "10d",
-      precipitation: 40,
-      humidity: 70,
-      windSpeed: 5.1
-    },
-    {
-      date: new Date(Date.now() + 3*86400000).toISOString().split('T')[0],
-      minTemp: 7,
-      maxTemp: 15,
-      description: "Cloudy",
-      icon: "04d",
-      precipitation: 25,
-      humidity: 68,
-      windSpeed: 4.5
-    },
-    {
-      date: new Date(Date.now() + 4*86400000).toISOString().split('T')[0],
-      minTemp: 8,
-      maxTemp: 14,
-      description: "Moderate rain",
-      icon: "10d",
-      precipitation: 60,
-      humidity: 75,
-      windSpeed: 6.2
-    }
-  ],
-  timestamp: new Date().toISOString()
-};
 
 export default function Home() {
   const [location, setLocation] = useState('London'); // Default location
@@ -83,11 +22,6 @@ export default function Home() {
 
   // Function to process forecast data for our component
   const processForecastData = () => {
-    // Check if we have actual data from API
-    if (!forecastData) {
-      return MOCK_FORECAST_DATA.forecast;
-    }
-    
     try {
       // Detect the structure of the forecast data
       const anyData = forecastData as any;
@@ -110,10 +44,6 @@ export default function Home() {
         } else if (anyData.daily && Array.isArray(anyData.daily)) {
           forecastItems = anyData.daily;
         }
-      }
-      
-      if (forecastItems.length === 0) {
-        return MOCK_FORECAST_DATA.forecast;
       }
       
       // Map the items to our expected format
@@ -194,7 +124,8 @@ export default function Home() {
         return result;
       });
     } catch (err) {
-      return MOCK_FORECAST_DATA.forecast;
+      console.error('Error processing forecast data:', err);
+      return [];
     }
   };
 
