@@ -13,6 +13,7 @@ A modern, serverless weather application that provides real-time weather data an
 - **Real-time Weather Data**: Current conditions with detailed metrics (temperature, humidity, wind, pressure, etc.)
 - **Multi-day Forecasts**: Plan ahead with accurate 7-day weather predictions
 - **Location Management**: Save favorite locations for quick access
+- **User Authentication**: Secure login/registration with profile management
 - **Personalization**: Customize units (°C/°F), dashboard layout, and theme preferences
 - **Responsive Design**: Optimized for both desktop and mobile devices
 - **Dark/Light Mode**: Eye-friendly interface for day and night usage
@@ -25,6 +26,7 @@ This project demonstrates a modern serverless architecture using AWS services:
 ### Frontend
 
 - **React.js**: Component-based UI with hooks for state management
+- **Next.js**: Server-side rendering and static site generation
 - **AWS Amplify**: Automated deployment with CI/CD pipeline
 - **Responsive Design**: Mobile-first approach with adaptive layouts
 - **Interactive Visualizations**: Dynamic charts and weather condition displays
@@ -35,6 +37,13 @@ This project demonstrates a modern serverless architecture using AWS services:
 - **Lambda Functions**: Event-driven computing for API requests
 - **Weather API Integration**: Proxied requests to external weather data providers
 - **Efficient Caching**: Minimized API calls for better performance and reduced costs
+
+### Authentication & Authorization
+
+- **AWS Cognito**: User registration, login, and profile management
+- **JWT Tokens**: Secure API access with token-based authentication
+- **Protected Routes**: Client-side route protection for authenticated users
+- **User Preferences**: Personalized settings stored per user
 
 ### Data Layer
 
@@ -88,43 +97,18 @@ amplify push
 amplify publish
 ```
 
-## 📋 Implementation Roadmap
+## 📋 Implementation Status
 
-1. **AWS Infrastructure Setup**
-
-   - Cognito user pool configuration
-   - DynamoDB tables creation
-   - Lambda function deployment
-   - API Gateway endpoint configuration
-
-2. **Frontend Development**
-
-   - Core UI components
-   - State management implementation
-   - Responsive layout design
-
-3. **Authentication Flow**
-
-   - User registration and login
-   - Password recovery
-   - Profile management
-
-4. **Weather Service Integration**
-
-   - Current conditions display
-   - Forecast visualization
-   - Location search functionality
-
-5. **User Preference System**
-
-   - Customizable units and layouts
-   - Theme configuration
-   - Default location settings
-
-6. **Deployment & Production**
-   - CI/CD pipeline with Amplify
-   - Backend-frontend integration
-   - Performance optimization
+✅ Core UI components  
+✅ Weather data display  
+✅ Forecast visualization  
+✅ Responsive design  
+✅ User authentication system  
+✅ Profile management  
+⬜ Location saving  
+⬜ User preferences  
+⬜ AWS Cognito integration  
+⬜ Backend API deployment
 
 ## 🔧 AWS Services Utilized
 
