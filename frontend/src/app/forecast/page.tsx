@@ -4,6 +4,42 @@ import { useState } from 'react';
 import { useForecast } from '@/lib/hooks/useWeather';
 import WeatherForecast from '@/components/weather/WeatherForecast';
 
+// Define types for forecast data
+interface ForecastItem {
+  date?: string;
+  temperature?: {
+    min?: number;
+    max?: number;
+  };
+  minTemp?: number;
+  maxTemp?: number;
+  temp?: {
+    min?: number;
+    max?: number;
+  };
+  main?: {
+    temp_min?: number;
+    temp_max?: number;
+    humidity?: number;
+  };
+  weather?: {
+    description?: string;
+    icon?: string;
+  } | Array<{
+    description?: string;
+    icon?: string;
+  }>;
+  precipitation?: number | { probability?: number };
+  pop?: number;
+  humidity?: number;
+  wind?: {
+    avg?: number;
+    speed?: number;
+    max?: number;
+  };
+  windSpeed?: number;
+}
+
 export default function ForecastPage() {
     const [location, setLocation] = useState('London');
     const { data: forecastData, isLoading: forecastLoading, error: forecastError } = useForecast(location);
@@ -19,33 +55,36 @@ export default function ForecastPage() {
 
     const processForecastData = () => {
         try {
-          // Detect the structure of the forecast data
-          const anyData = forecastData as any;
-          let forecastItems: any[] = [];
+          if (!forecastData) return [];
+          
+          // First convert to unknown, then to Record<string, unknown> to avoid type errors
+          const anyData = (forecastData as unknown) as Record<string, unknown>;
+          let forecastItems: ForecastItem[] = [];
           
           // Try to get the forecast array
           if (Array.isArray(anyData.forecast)) {
-            forecastItems = anyData.forecast;
+            forecastItems = anyData.forecast as ForecastItem[];
           } else if (anyData.forecast && typeof anyData.forecast === 'object') {
             // If forecast is an object but not an array, it might be wrapped in another object
-            if (Array.isArray(anyData.forecast.list)) {
-              forecastItems = anyData.forecast.list;
+            const forecastObj = anyData.forecast as Record<string, unknown>;
+            if (Array.isArray(forecastObj.list)) {
+              forecastItems = forecastObj.list as ForecastItem[];
             }
           }
           
           // Try other common structures if we still don't have items
           if (forecastItems.length === 0) {
             if (Array.isArray(anyData.list)) {
-              forecastItems = anyData.list;
+              forecastItems = anyData.list as ForecastItem[];
             } else if (anyData.daily && Array.isArray(anyData.daily)) {
-              forecastItems = anyData.daily;
+              forecastItems = anyData.daily as ForecastItem[];
             }
           }
           
           // Map the items to our expected format
-          return forecastItems.map((item: any, index: number) => {
+          return forecastItems.map((item: ForecastItem, index: number) => {
             // Extract date
-            let dateValue = item.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0];
+            const dateValue = item.date || new Date(Date.now() + index * 86400000).toISOString().split('T')[0];
             
             // Extract temperatures based on the specific structure
             let minTemp = 0;
